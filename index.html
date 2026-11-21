@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DompetKu - Catat Keuangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        @media(min-width: 481px) {
+            .container {
+                min-height: 85vh;
+                border-radius: 20px;
+            }
+        }
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* Logo Styling */
+        .logo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .logo-icon {
+            width: 85px;
+            height: 85px;
+            margin-bottom: 8px;
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-logo-mini {
+            width: 36px;
+            height: 36px;
+        }
+
+        /* Auth Styling */
+        .auth-container {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .auth-container h1 {
+            color: #2E7D32;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .auth-container p {
+            color: #777;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .input-group {
+            width: 100%;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #4CAF50;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            opacity: 0.92;
+        }
+        .switch-auth {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        .switch-auth a {
+            color: #2E7D32;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Dashboard Styling */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+        .logout-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
+        }
+        .balance-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .balance-card h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+        .summary-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .summary-box {
+            flex: 1;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        .summary-box p {
+            font-size: 12px;
+            color: #666;
+        }
+        .summary-box h4 {
+            font-size: 15px;
+            margin-top: 3px;
+        }
+        .summary-box.income h4 { color: #2e7d32; }
+        .summary-box.expense h4 { color: #d32f2f; }
+
+        /* Section Title */
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        /* Percentage / Category Breakdown */
+        .percentage-container {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .progress-item {
+            margin-bottom: 10px;
+        }
+        .progress-item:last-child {
+            margin-bottom: 0;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #ff5252;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Transaction Form */
+        .transaction-form {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        /* Transaction List */
+        .transaction-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 13px;
+        }
+        .transaction-info span {
+            display: block;
+            font-size: 11px;
+            color: #888;
+        }
+        .transaction-amount.income { color: #2e7d32; font-weight: 600; }
+        .transaction-amount.expense { color: #d32f2f; font-weight: 600; }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff5252;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+    </style>
+    <!-- PWA Manifest Link (Pastikan file manifest.json terhubung) -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<div class="container">
+    <!-- LAYAR LOGIN -->
+    <div id="loginScreen" class="screen auth-container active">
+        <div class="logo-wrapper">
+            <!-- SVG LOGO DOMPETKU -->
+            <svg class="logo-icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="walletGrad" x1="20" y1="30" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#4CAF50"/>
+                        <stop offset="100%" stop-color="#1B5E20"/>
+                    </linearGradient>
+                    <linearGradient id="arrowGrad" x1="25" y1="90" x2="105" y2="20" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#AEEA00"/>
+                        <stop offset="100%" stop-color="#64DD17"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="62" cy="34" r="18" fill="#8BC34A"/>
+                <path d="M51 34C51 27.9249 55.9249 23 62 23C68.0751 23 73 27.9249 73 34" stroke="#2E7D32" stroke-width="3" stroke-linecap="round"/>
+                <rect x="22" y="38" width="76" height="62" rx="14" fill="url(#walletGrad)"/>
+                <path d="M22 50C22 43.3726 27.3726 38 34 38H86C92.6274 38 98 43.3726 98 50V52H22V50Z" fill="#388E3C"/>
+                <rect x="74" y="60" width="28" height="18" rx="9" fill="#43A047"/>
+                <circle cx="83" cy="69" r="4" fill="#FFFFFF"/>
+                <path d="M26 88L48 64L62 74L98 34" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M26 88L48 64L62 74L98 34" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M84 32H100V48" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h1>DompetKu</h1>
+        </div>
+        <p>Kelola keuangan jadi lebih mudah</p>
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="loginUser" placeholder="Masukkan username">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="Masukkan password">
+        </div>
+        <button class="btn" onclick="handleLogin()">Masuk</button>
+        <div class="switch-auth">
+            Belum punya akun? <a href="#" onclick="switchScreen('registerScreen')">Daftar</a>
+        </div>
+    </div>
+
+    <!-- LAYAR REGISTER -->
+    <div id="registerScreen" class="screen auth-container">
+        <div class="logo-wrapper">
+            <svg class="logo-icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="62" cy="34" r="18" fill="#8BC34A"/>
+                <path d="M51 34C51 27.9249 55.9249 23 62 23C68.0751 23 73 27.9249 73 34" stroke="#2E7D32" stroke-width="3" stroke-linecap="round"/>
+                <rect x="22" y="38" width="76" height="62" rx="14" fill="url(#walletGrad)"/>
+                <path d="M22 50C22 43.3726 27.3726 38 34 38H86C92.6274 38 98 43.3726 98 50V52H22V50Z" fill="#388E3C"/>
+                <rect x="74" y="60" width="28" height="18" rx="9" fill="#43A047"/>
+                <circle cx="83" cy="69" r="4" fill="#FFFFFF"/>
+                <path d="M26 88L48 64L62 74L98 34" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M26 88L48 64L62 74L98 34" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M84 32H100V48" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h1>Daftar Akun</h1>
+        </div>
+        <p>Buat akun DompetKu baru Anda</p>
+        <div class="input-group">
+            <label>Username Baru</label>
+            <input type="text" id="regUser" placeholder="Buat username">
+        </div>
+        <div class="input-group">
+            <label>Password Baru</label>
+            <input type="password" id="regPass" placeholder="Buat password">
+        </div>
+        <button class="btn" onclick="handleRegister()">Daftar Sekarang</button>
+        <div class="switch-auth">
+            Sudah punya akun? <a href="#" onclick="switchScreen('loginScreen')">Masuk</a>
+        </div>
+    </div>
+
+    <!-- LAYAR UTAMA (DASHBOARD) -->
+    <div id="dashboardScreen" class="screen">
+        <div class="header">
+            <div class="header-brand">
+                <svg class="header-logo-mini" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="62" cy="34" r="18" fill="#8BC34A"/>
+                    <rect x="22" y="38" width="76" height="62" rx="14" fill="url(#walletGrad)"/>
+                    <rect x="74" y="60" width="28" height="18" rx="9" fill="#43A047"/>
+                    <circle cx="83" cy="69" r="4" fill="#FFFFFF"/>
+                    <path d="M26 88L48 64L62 74L98 34" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M26 88L48 64L62 74L98 34" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M84 32H100V48" stroke="url(#arrowGrad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h2>Halo, <span id="userNameDisplay">User</span>! 👋</h2>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Keluar</button>
+        </div>
+
+        <div class="balance-card">
+            <p>Total Saldo Anda</p>
+            <h3 id="totalBalance">Rp 0</h3>
+        </div>
+
+        <div class="summary-row">
+            <div class="summary-box income">
+                <p>Pemasukan</p>
+                <h4 id="totalIncome">Rp 0</h4>
+            </div>
+            <div class="summary-box expense">
+                <p>Pengeluaran</p>
+                <h4 id="totalExpense">Rp 0</h4>
+            </div>
+        </div>
+
+        <!-- Persentase Kategori Pengeluaran -->
+        <div class="section-title">Persentase Pengeluaran</div>
+        <div class="percentage-container" id="percentageContainer">
+            <p style="font-size: 12px; color: #777; text-align: center;">Belum ada pengeluaran tercatat.</p>
+        </div>
+
+        <!-- Form Tambah Transaksi -->
+        <div class="section-title">Tambah Transaksi</div>
+        <div class="transaction-form">
+            <div class="input-group">
+                <label>Keterangan</label>
+                <input type="text" id="transDesc" placeholder="Contoh: Beli Makan / Gaji">
+            </div>
+            <div class="input-group">
+                <label>Jumlah (Rp)</label>
+                <input type="number" id="transAmount" placeholder="Contoh: 50000">
+            </div>
+            <div class="input-group">
+                <label>Tipe</label>
+                <select id="transType" onchange="toggleCategory()">
+                    <option value="income">Pemasukan</option>
+                    <option value="expense" selected>Pengeluaran</option>
+                </select>
+            </div>
+            <div class="input-group" id="categoryGroup">
+                <label>Kategori Pengeluaran</label>
+                <select id="transCategory">
+                    <option value="Makanan">Makanan & Minuman</option>
+                    <option value="Transportasi">Transportasi</option>
+                    <option value="Hiburan">Hiburan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addTransaction()">Simpan Transaksi</button>
+        </div>
+
+        <!-- Riwayat Transaksi -->
+        <div class="section-title">Riwayat Transaksi</div>
+        <ul class="transaction-list" id="transactionList">
+            <!-- Data akan masuk otomatis di sini -->
+        </ul>
+    </div>
+</div>
+
+<script>
+    // --- PENDAFTARAN SERVICE WORKER UNTUK PWA ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then((registration) => {
+                    console.log('ServiceWorker berhasil didaftarkan: ', registration.scope);
+                })
+                .catch((err) => {
+                    console.log('Pendaftaran ServiceWorker gagal: ', err);
+                });
+        });
+    }
+
+    // --- SISTEM APLIKASI KEUANGAN ---
+    let currentUser = null;
+    let usersData = JSON.parse(localStorage.getItem('dompetku_users')) || {};
+    let transactions = JSON.parse(localStorage.getItem('dompetku_transactions')) || {};
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function handleRegister() {
+        const user = document.getElementById('regUser').value.trim();
+        const pass = document.getElementById('regPass').value.trim();
+
+        if(!user || !pass) {
+            alert('Username dan password tidak boleh kosong!');
+            return;
+        }
+
+        if(usersData[user]) {
+            alert('Username sudah terpakai, gunakan yang lain.');
+            return;
+        }
+
+        usersData[user] = pass;
+        localStorage.setItem('dompetku_users', JSON.stringify(usersData));
+        alert('Pendaftaran berhasil! Silakan masuk.');
+        switchScreen('loginScreen');
+    }
+
+    function handleLogin() {
+        const user = document.getElementById('loginUser').value.trim();
+        const pass = document.getElementById('loginPass').value.trim();
+
+        if(usersData[user] && usersData[user] === pass) {
+            currentUser = user;
+            document.getElementById('userNameDisplay').innerText = currentUser;
+            if(!transactions[currentUser]) transactions[currentUser] = [];
+            switchScreen('dashboardScreen');
+            updateDashboard();
+        } else {
+            alert('Username atau password salah!');
+        }
+    }
+
+    function handleLogout() {
+        currentUser = null;
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+        switchScreen('loginScreen');
+    }
+
+    function toggleCategory() {
+        const type = document.getElementById('transType').value;
+        const catGroup = document.getElementById('categoryGroup');
+        catGroup.style.display = type === 'expense' ? 'block' : 'none';
+    }
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+    }
+
+    function addTransaction() {
+        const desc = document.getElementById('transDesc').value.trim();
+        const amount = parseFloat(document.getElementById('transAmount').value);
+        const type = document.getElementById('transType').value;
+        const category = type === 'expense' ? document.getElementById('transCategory').value : 'Pemasukan';
+
+        if(!desc || isNaN(amount) || amount <= 0) {
+            alert('Mohon isi deskripsi dan jumlah nominal yang valid!');
+            return;
+        }
+
+        const newTrans = {
+            id: Date.now(),
+            desc,
+            amount,
+            type,
+            category
+        };
+
+        transactions[currentUser].push(newTrans);
+        localStorage.setItem('dompetku_transactions', JSON.stringify(transactions));
+
+        // Reset form
+        document.getElementById('transDesc').value = '';
+        document.getElementById('transAmount').value = '';
+
+        updateDashboard();
+    }
+
+    function deleteTransaction(id) {
+        transactions[currentUser] = transactions[currentUser].filter(t => t.id !== id);
+        localStorage.setItem('dompetku_transactions', JSON.stringify(transactions));
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        const userTrans = transactions[currentUser] || [];
+        let totalIncome = 0;
+        let totalExpense = 0;
+        let categoryTotals = { Makanan: 0, Transportasi: 0, Hiburan: 0, Lainnya: 0 };
+
+        const listEl = document.getElementById('transactionList');
+        listEl.innerHTML = '';
+
+        userTrans.forEach(t => {
+            if(t.type === 'income') {
+                totalIncome += t.amount;
+            } else {
+                totalExpense += t.amount;
+                if(categoryTotals[t.category] !== undefined) {
+                    categoryTotals[t.category] += t.amount;
+                } else {
+                    categoryTotals['Lainnya'] += t.amount;
+                }
+            }
+
+            // Render list item
+            const li = document.createElement('li');
+            li.className = 'transaction-item';
+            li.innerHTML = `
+                <div class="transaction-info">
+                    <strong>${t.desc}</strong>
+                    <span>${t.type === 'expense' ? t.category : 'Pemasukan'}</span>
+                </div>
+                <div>
+                    <span class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'} ${formatRupiah(t.amount)}
+                    </span>
+                    <button class="delete-btn" onclick="deleteTransaction(${t.id})">✕</button>
+                </div>
+            `;
+            listEl.prepend(li);
+        });
+
+        const totalBalance = totalIncome - totalExpense;
+        document.getElementById('totalBalance').innerText = formatRupiah(totalBalance);
+        document.getElementById('totalIncome').innerText = formatRupiah(totalIncome);
+        document.getElementById('totalExpense').innerText = formatRupiah(totalExpense);
+
+        // Render Persentase Pengeluaran
+        const percentageContainer = document.getElementById('percentageContainer');
+        percentageContainer.innerHTML = '';
+
+        if(totalExpense === 0) {
+            percentageContainer.innerHTML = '<p style="font-size: 12px; color: #777; text-align: center;">Belum ada pengeluaran tercatat.</p>';
+        } else {
+            for (let cat in categoryTotals) {
+                let amount = categoryTotals[cat];
+                if(amount > 0) {
+                    let percentage = ((amount / totalExpense) * 100).toFixed(1);
+                    percentageContainer.innerHTML += `
+                        <div class="progress-item">
+                            <div class="progress-info">
+                                <span>${cat} (${formatRupiah(amount)})</span>
+                                <span><strong>${percentage}%</strong></span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
